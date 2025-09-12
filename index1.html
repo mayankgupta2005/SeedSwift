@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadhaar vs. DBT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 2rem;
+        }
+        .text-gradient {
+            background-image: linear-gradient(to right, #4c51bf, #6b46c1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @media (min-width: 768px) {
+            .card-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-bg-light {
+            background-color: #e0f2fe;
+        }
+        .card-bg-dark {
+            background-color: #a5b4fc;
+        }
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .icon-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background-color: #4c51bf;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.5s ease-in-out;
+        }
+        .card:hover .icon-container {
+            transform: rotateY(360deg);
+        }
+        .icon {
+            width: 48px;
+            height: 48px;
+        }
+        .list-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            animation: slideInLeft 0.5s ease-in-out forwards;
+            opacity: 0;
+        }
+        .list-item:nth-child(2) { animation-delay: 0.2s; }
+        .list-item:nth-child(3) { animation-delay: 0.4s; }
+        .list-item:nth-child(4) { animation-delay: 0.6s; }
+
+        .svg-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-right: 1rem;
+            color: #4c51bf;
+        }
+
+        .animation-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 1s ease-in-out;
+        }
+        .animation-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            border: 8px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4c51bf;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .slide-up-fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .slide-up-fade-in.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Dashboard specific styles */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            height: 1.5rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-image: linear-gradient(to right, #4c51bf, #6b46c1);
+            transition: width 1s ease-in-out;
+        }
+
+        /* Chatbot specific styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 350px;
+            height: 450px;
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.8);
+            transform-origin: bottom right;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            z-index: 2000;
+        }
+        .chatbot-container.active {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .chat-header {
+            background-color: #4c51bf;
+            color: white;
+            padding: 1rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f7fafc;
+        }
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        .message.user {
+            background-color: #a5b4fc;
+            margin-left: auto;
+            text-align: right;
+            color: #1a202c;
+        }
+        .message.bot {
+            background-color: #4c51bf;
+            color: white;
+            margin-right: auto;
+        }
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .chat-input input {
+            flex-grow: 1;
+            border: 1px solid #cbd5e0;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            transition: border-color 0.3s;
+        }
+        .chat-input input:focus {
+            outline: none;
+            border-color: #4c51bf;
+        }
+        .chat-input button {
+            background-color: #4c51bf;
+            color: white;
+            border-radius: 9999px;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        .chat-input button:hover {
+            background-color: #3f51b5;
+        }
+        .chat-icon-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: #4c51bf;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease-in-out;
+            cursor: pointer;
+            z-index: 2000;
+        }
+        .chat-icon-button:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 antialiased">
+    <!-- Intro Animation -->
+    <div id="animation-screen" class="animation-container">
+        <div class="flex flex-col items-center">
+            <div class="mb-4">
+                <button data-lang="en" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200">English</button>
+                <button data-lang="hi" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200">हिंदी</button>
+            </div>
+            <svg class="w-24 h-24 mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-6h-2v6zm0-8h2V7h-2v2z" fill="#4C51BF"/>
+            </svg>
+            <h1 id="intro-title" class="text-3xl md:text-5xl font-extrabold text-center text-gradient leading-tight mb-4 animate-pulse">
+                Understanding Your Scholarship
+            </h1>
+            <p id="intro-subtitle" class="text-lg text-gray-600 max-w-xl text-center">
+                A quick guide to making sure your scholarship money reaches you without any hassle.
+            </p>
+            <button id="startButton" class="mt-8 px-6 py-3 bg-purple-600 text-white font-bold rounded-full shadow-lg hover:bg-purple-700 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">
+                Let's Begin
+            </button>
+        </div>
+    </div>
+
+    <div id="main-content" class="container mx-auto px-4 py-8 md:py-16 hidden">
+        <div class="pt-12">
+            <div class="flex justify-end mb-4">
+                <button data-lang="en" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200">English</button>
+                <button data-lang="hi" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200 ml-2">हिंदी</button>
+            </div>
+            <header class="text-center mb-12">
+                <h1 data-i18n-key="main_title" class="text-4xl md:text-5xl font-extrabold text-gradient mb-4">
+                    Aadhaar Linked vs. DBT Enabled
+                </h1>
+                <p data-i18n-key="main_subtitle" class="text-lg text-gray-600">
+                    Understanding the difference is key to receiving your Pre & Post-Matric scholarships for SCs.
+                </p>
+            </header>
+        </div>
+
+        <!-- Dashboard Section -->
+        <section class="mb-12 p-6 bg-white rounded-3xl shadow-lg slide-up-fade-in">
+            <h2 data-i18n-key="dashboard_title" class="text-3xl font-bold text-center mb-6 text-gray-800">Your Scholarship Dashboard</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 data-i18n-key="aadhaar_link_status_title" class="text-xl font-semibold mb-2 text-indigo-700">Aadhaar Link Status</h3>
+                    <p data-i18n-key="aadhaar_link_status_desc" class="text-sm text-gray-500 mb-2">Completion of Aadhaar linking to a bank account.</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 100%;"></div>
+                    </div>
+                    <p data-i18n-key="complete_status" class="text-right font-bold mt-2 text-green-600">Complete</p>
+                </div>
+                <div>
+                    <h3 data-i18n-key="dbt_seeding_status_title" class="text-xl font-semibold mb-2 text-purple-700">DBT Seeding Status</h3>
+                    <p data-i18n-key="dbt_seeding_status_desc" class="text-sm text-gray-500 mb-2">Confirmation of bank account seeded for DBT.</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 75%;"></div>
+                    </div>
+                    <p data-i18n-key="in_progress_status" class="text-right font-bold mt-2 text-yellow-600">In Progress (75%)</p>
+                </div>
+            </div>
+            <p data-i18n-key="dashboard_note" class="mt-6 text-center text-gray-600">
+                The dashboard gives you a quick overview. Remember, both steps are necessary for a smooth process.
+            </p>
+        </section>
+
+        <div class="card-container">
+            <!-- Aadhaar Linked Account Card -->
+            <div class="card slide-up-fade-in">
+                <div class="icon-container">
+                    <svg class="icon text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.313-2.687 6-6 6S0 14.313 0 11s2.687-6 6-6 6 2.687 6 6zm6 0c0 3.313-2.687 6-6 6s-6-2.687-6-6 2.687-6 6-6 6 2.687 6 6zM22 17h-2v-4h-2v4h-2v2h6v-2zM12 3a9 9 0 100 18A9 9 0 0012 3z"></path>
+                    </svg>
+                </div>
+                <h2 data-i18n-key="aadhaar_card_title" class="text-3xl font-bold text-center mb-6 text-indigo-800">Aadhaar Linked Account</h2>
+                <div class="space-y-4">
+                    <p data-i18n-key="aadhaar_card_desc" class="text-gray-700 text-center">
+                        This is the basic step. It simply links your Aadhaar number to your bank account for identification and verification purposes.
+                    </p>
+                    <ul class="text-gray-700">
+                        <li class="list-item">
+                            <svg class="svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-9-6a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg>
+                            <span data-i18n-key="aadhaar_point1" class="text-lg">Primarily for KYC (Know Your Customer) and identity verification.</span>
+                        </li>
+                        <li class="list-item">
+                            <svg class="svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                            <span data-i18n-key="aadhaar_point2" class="text-lg">Does not automatically guarantee that you will receive scholarship funds.</span>
+                        </li>
+                        <li class="list-item">
+                            <svg class="svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span data-i18n-key="aadhaar_point3" class="text-lg">This is only the first step. You need to do more!</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- DBT Enabled Aadhaar Seeded Account Card -->
+            <div class="card card-bg-light slide-up-fade-in">
+                <div class="icon-container bg-purple-600">
+                    <svg class="icon text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9l-4 4-4-4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v9"></path>
+                    </svg>
+                </div>
+                <h2 data-i18n-key="dbt_card_title" class="text-3xl font-bold text-center mb-6 text-purple-800">DBT Enabled Aadhaar Seeded Account</h2>
+                <div class="space-y-4">
+                    <p data-i18n-key="dbt_card_desc" class="text-gray-700 text-center">
+                        This is the crucial step for receiving government benefits like scholarships. Your account is specifically "seeded" for Direct Beneficiary Transfers.
+                    </p>
+                    <ul class="text-gray-700">
+                        <li class="list-item">
+                            <svg class="svg-icon text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span data-i18n-key="dbt_point1" class="text-lg">Your account is designated to receive government funds directly.</span>
+                        </li>
+                        <li class="list-item">
+                            <svg class="svg-icon text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9l-4 4-4-4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
+                            <span data-i18n-key="dbt_point2" class="text-lg">Crucial for receiving scholarships and other benefits from the government.</span>
+                        </li>
+                        <li class="list-item">
+                            <svg class="svg-icon text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span data-i18n-key="dbt_point3" class="text-lg">You must ensure your Aadhaar is "seeded" with a specific bank account for DBT.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- More Content Section -->
+        <section class="mt-16 mb-12 p-6 bg-white rounded-3xl shadow-lg slide-up-fade-in">
+            <h2 data-i18n-key="why_dbt_title" class="text-3xl font-bold text-center mb-6 text-gray-800">Why DBT is So Important</h2>
+            <div class="space-y-6">
+                <div class="flex items-center slide-up-fade-in">
+                    <svg class="w-12 h-12 text-green-500 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p data-i18n-key="reduced_delays" class="text-lg text-gray-700">
+                        <span class="font-semibold text-gray-900">Reduced Delays:</span> Funds are transferred directly from the government to your bank account, cutting out middlemen and reducing delays.
+                    </p>
+                </div>
+                <div class="flex items-center slide-up-fade-in" style="transition-delay: 0.2s;">
+                    <svg class="w-12 h-12 text-blue-500 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15a3 3 0 100-6 3 3 0 000 6z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9a3 3 0 100 6 3 3 0 000-6z"></path>
+                    </svg>
+                    <p data-i18n-key="increased_transparency" class="text-lg text-gray-700">
+                        <span class="font-semibold text-gray-900">Increased Transparency:</span> You can easily track the status of your scholarship payment, giving you peace of mind.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Section for DBT Status Check -->
+        <section class="mt-16 mb-12 p-6 bg-white rounded-3xl shadow-lg slide-up-fade-in">
+            <h2 data-i18n-key="dbt_check_title" class="text-3xl font-bold text-center mb-6 text-gray-800">How to Check Your Aadhaar & DBT Status</h2>
+            <p data-i18n-key="dbt_check_subtitle" class="text-center text-gray-600 mb-8">
+                Follow these simple steps on the UIDAI website to verify your bank account linking status.
+            </p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Step 1 Card -->
+                <div class="p-6 bg-gray-50 rounded-xl shadow-inner slide-up-fade-in">
+                    <h3 data-i18n-key="step1_title" class="text-xl font-bold mb-2 text-indigo-700">Step 1: Visit the Official Site</h3>
+                    <p data-i18n-key="step1_desc" class="text-gray-600 mb-4">Go to the official UIDAI website and look for the Aadhaar Services section.</p>
+                    <div class="bg-gray-200 border border-gray-300 rounded-lg p-4 font-mono text-sm text-gray-800">
+                        <p data-i18n-key="step1_img_title">UIDAI Official Website</p>
+                        <hr class="my-2 border-gray-400">
+                        <p data-i18n-key="step1_img_heading" class="font-semibold">Aadhaar Services</p>
+                        <ul class="list-disc list-inside ml-4">
+                            <li data-i18n-key="step1_img_list1">Check Aadhaar & Bank Account Linking Status</li>
+                            <li data-i18n-key="step1_img_list2">Aadhaar Authentication History</li>
+                            <li data-i18n-key="step1_img_list3">...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 2 Card -->
+                <div class="p-6 bg-gray-50 rounded-xl shadow-inner slide-up-fade-in" style="transition-delay: 0.1s;">
+                    <h3 data-i18n-key="step2_title" class="text-xl font-bold mb-2 text-indigo-700">Step 2: Access the Linking Page</h3>
+                    <p data-i18n-key="step2_desc" class="text-gray-600 mb-4">Click on the "Check Aadhaar & Bank Account Linking Status" link.</p>
+                    <div class="bg-gray-200 border border-gray-300 rounded-lg p-4 font-mono text-sm text-gray-800">
+                        <p data-i18n-key="step2_img_title">Web Page: Check Aadhaar/Bank Account Linking Status</p>
+                        <hr class="my-2 border-gray-400">
+                        <p data-i18n-key="step2_img_heading" class="text-center">To check your status, enter your details below.</p>
+                        <div class="bg-white p-2 rounded-md my-2 border border-gray-400">
+                            <span data-i18n-key="step2_img_input1_placeholder">Enter your 12-digit Aadhaar Number</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-md my-2 border border-gray-400">
+                            <span data-i18n-key="step2_img_input2_placeholder">Enter the security code</span>
+                        </div>
+                        <button data-i18n-key="step2_img_button" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-md mt-2">Send OTP</button>
+                    </div>
+                </div>
+
+                <!-- Step 3 Card -->
+                <div class="p-6 bg-gray-50 rounded-xl shadow-inner slide-up-fade-in" style="transition-delay: 0.2s;">
+                    <h3 data-i18n-key="step3_title" class="text-xl font-bold mb-2 text-indigo-700">Step 3: Enter OTP</h3>
+                    <p data-i18n-key="step3_desc" class="text-gray-600 mb-4">Enter your Aadhaar number, fill in the security code, and then enter the OTP you receive on your registered mobile number.</p>
+                    <div class="bg-gray-200 border border-gray-300 rounded-lg p-4 font-mono text-sm text-gray-800">
+                        <p data-i18n-key="step3_img_title">Web Page: Check Aadhaar/Bank Account Linking Status</p>
+                        <hr class="my-2 border-gray-400">
+                        <p data-i18n-key="step3_img_heading" class="text-center">An OTP has been sent to your mobile number.</p>
+                        <div class="bg-white p-2 rounded-md my-2 border border-gray-400">
+                            <span data-i18n-key="step3_img_input_placeholder">Enter the OTP received</span>
+                        </div>
+                        <button data-i18n-key="step3_img_button" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-md mt-2">Submit</button>
+                    </div>
+                </div>
+
+                <!-- Step 4 Card -->
+                <div class="p-6 bg-gray-50 rounded-xl shadow-inner slide-up-fade-in" style="transition-delay: 0.3s;">
+                    <h3 data-i18n-key="step4_title" class="text-xl font-bold mb-2 text-indigo-700">Step 4: View Your Status</h3>
+                    <p data-i18n-key="step4_desc" class="text-gray-600 mb-4">After submitting the OTP, a confirmation page will display your Aadhaar and bank linkage status.</p>
+                    <div class="bg-gray-200 border border-gray-300 rounded-lg p-4 font-mono text-sm text-gray-800">
+                        <p data-i18n-key="step4_img_title">Web Page: Aadhaar Bank Account Linking Status</p>
+                        <hr class="my-2 border-gray-400">
+                        <p data-i18n-key="step4_img_heading" class="font-bold text-green-700">Congratulations! Your Aadhaar-Bank Mapping has been done</p>
+                        <table class="w-full text-xs mt-2 border-collapse">
+                            <thead>
+                                <tr class="bg-gray-300">
+                                    <th data-i18n-key="step4_table_header1" class="border border-gray-400 p-1">Bank Name</th>
+                                    <th data-i18n-key="step4_table_header2" class="border border-gray-400 p-1">Status</th>
+                                    <th data-i18n-key="step4_table_header3" class="border border-gray-400 p-1">Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white">
+                                    <td class="border border-gray-400 p-1">State Bank of India</td>
+                                    <td data-i18n-key="step4_table_status" class="border border-gray-400 p-1 text-green-600">Active</td>
+                                    <td class="border border-gray-400 p-1">Today's Date</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p data-i18n-key="step4_important_heading" class="mt-4 font-semibold">Important:</p>
+                        <p data-i18n-key="step4_important_desc" class="text-xs">This confirms the link, but ensure your bank has also "seeded" the account for DBT to receive funds.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Section: Common Questions and Tips -->
+        <section class="mt-16 mb-12 p-6 bg-white rounded-3xl shadow-lg slide-up-fade-in">
+            <h2 data-i18n-key="faq_title" class="text-3xl font-bold text-center mb-8 text-gray-800">Common Questions & Tips</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="p-6 bg-indigo-50 rounded-xl shadow-inner slide-up-fade-in">
+                    <h3 data-i18n-key="q1_title" class="text-xl font-bold mb-2 text-indigo-700">Q: Can I have multiple bank accounts linked to my Aadhaar?</h3>
+                    <p data-i18n-key="q1_answer" class="text-gray-600">Yes, you can. However, only **one** account can be active for DBT at any given time. This is called the 'latest seeded' account and is where your scholarship will be disbursed. Make sure the correct account is seeded for DBT.</p>
+                </div>
+                <div class="p-6 bg-indigo-50 rounded-xl shadow-inner slide-up-fade-in" style="transition-delay: 0.1s;">
+                    <h3 data-i18n-key="q2_title" class="text-xl font-bold mb-2 text-indigo-700">Q: What if I have Aadhaar-linked but not DBT-seeded?</h3>
+                    <p data-i18n-key="q2_answer" class="text-gray-600">Your scholarship payment will **fail**. The Government can only transfer funds to an account that is explicitly seeded for DBT. You must contact your bank and get your account seeded to receive your scholarship.</p>
+                </div>
+                <div class="p-6 bg-indigo-50 rounded-xl shadow-inner slide-up-fade-in" style="transition-delay: 0.2s;">
+                    <h3 data-i18n-key="q3_title" class="text-xl font-bold mb-2 text-indigo-700">Tip: What document to carry to the bank?</h3>
+                    <p data-i18n-key="q3_answer" class="text-gray-600">When you go to the bank for Aadhaar seeding, carry a copy of your Aadhaar card and a signed consent form provided by the bank. Some banks may also require a passbook or a check leaf to verify your account details.</p>
+                </div>
+                <div class="p-6 bg-indigo-50 rounded-xl shadow-inner slide-up-fade-in" style="transition-delay: 0.3s;">
+                    <h3 data-i18n-key="q4_title" class="text-xl font-bold mb-2 text-indigo-700">Tip: Use NPCI Mapper</h3>
+                    <p data-i18n-key="q4_answer" class="text-gray-600">You can also check your Aadhaar seeding status directly on the NPCI website using their Aadhaar Mapper. This is a quick way to confirm which bank account is currently receiving your DBT payments.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action Section -->
+        <div class="text-center mt-16 animate-pulse slide-up-fade-in">
+            <h3 data-i18n-key="cta_title" class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+                What to do next?
+            </h3>
+            <p data-i18n-key="cta_desc" class="text-lg text-gray-600 mb-6">
+                Make sure your Aadhaar is not just linked, but **seeded** for DBT. Visit your bank branch or use their official website/app to complete this process.
+            </p>
+            <a href="https://uidai.gov.in/en/contact-support/have-any-question/308-english-uk/faqs/direct-benefit-transfer-dbt.html" target="_blank" data-i18n-key="cta_button" class="inline-block px-8 py-4 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
+                Learn More on UIDAI
+            </a>
+        </div>
+    </div>
+
+    <!-- Chatbot Button -->
+    <div id="chatbot-button" class="chat-icon-button">
+        <!-- New Gemini-themed icon -->
+        <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9 16a2 2 0 100-4 2 2 0 000 4zm6 0a2 2 0 100-4 2 2 0 000 4zM12 8a2 2 0 100-4 2 2 0 000 4z" fill="currentColor"/>
+        </svg>
+    </div>
+
+    <!-- Chatbot UI -->
+    <div id="chatbot-ui" class="chatbot-container">
+        <div class="chat-header">
+            <h3 data-i18n-key="chatbot_title" class="text-xl font-bold">Gemini Scholarship Bot</h3>
+            <button id="close-chat" class="w-6 h-6 rounded-full text-white hover:bg-white hover:text-gray-800 transition duration-300">
+                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="message bot">
+                <span data-i18n-key="chatbot_message1">Hi there! I'm your AI Scholarship Assistant, powered by Gemini.</span>
+            </div>
+            <div class="message bot">
+                <span data-i18n-key="chatbot_message2">How can I help you understand the difference between Aadhaar linking and DBT seeding for your scholarships?</span>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-button">
+                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 00.149 1.493 1 1 0 001.319.263L10 16.544l5.626 1.765a1 1 0 001.319-.263 1 1 0 00.149-1.493l-7-14z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                intro_title: "Understanding Your Scholarship",
+                intro_subtitle: "A quick guide to making sure your scholarship money reaches you without any hassle.",
+                start_button: "Let's Begin",
+                main_title: "Aadhaar Linked vs. DBT Enabled",
+                main_subtitle: "Understanding the difference is key to receiving your Pre & Post-Matric scholarships for SCs.",
+                dashboard_title: "Your Scholarship Dashboard",
+                aadhaar_link_status_title: "Aadhaar Link Status",
+                aadhaar_link_status_desc: "Completion of Aadhaar linking to a bank account.",
+                complete_status: "Complete",
+                dbt_seeding_status_title: "DBT Seeding Status",
+                dbt_seeding_status_desc: "Confirmation of bank account seeded for DBT.",
+                in_progress_status: "In Progress (75%)",
+                dashboard_note: "The dashboard gives you a quick overview. Remember, both steps are necessary for a smooth process.",
+                aadhaar_card_title: "Aadhaar Linked Account",
+                aadhaar_card_desc: "This is the basic step. It simply links your Aadhaar number to your bank account for identification and verification purposes.",
+                aadhaar_point1: "Primarily for KYC (Know Your Customer) and identity verification.",
+                aadhaar_point2: "Does not automatically guarantee that you will receive scholarship funds.",
+                aadhaar_point3: "This is only the first step. You need to do more!",
+                dbt_card_title: "DBT Enabled Aadhaar Seeded Account",
+                dbt_card_desc: "This is the crucial step for receiving government benefits like scholarships. Your account is specifically \"seeded\" for Direct Beneficiary Transfers.",
+                dbt_point1: "Your account is designated to receive government funds directly.",
+                dbt_point2: "Crucial for receiving scholarships and other benefits from the government.",
+                dbt_point3: "You must ensure your Aadhaar is \"seeded\" with a specific bank account for DBT.",
+                why_dbt_title: "Why DBT is So Important",
+                reduced_delays: "Reduced Delays: Funds are transferred directly from the government to your bank account, cutting out middlemen and reducing delays.",
+                increased_transparency: "Increased Transparency: You can easily track the status of your scholarship payment, giving you peace of mind.",
+                dbt_check_title: "How to Check Your Aadhaar & DBT Status",
+                dbt_check_subtitle: "Follow these simple steps on the UIDAI website to verify your bank account linking status.",
+                step1_title: "Step 1: Visit the Official Site",
+                step1_desc: "Go to the official UIDAI website and look for the Aadhaar Services section.",
+                step1_img_title: "UIDAI Official Website",
+                step1_img_heading: "Aadhaar Services",
+                step1_img_list1: "Check Aadhaar & Bank Account Linking Status",
+                step1_img_list2: "Aadhaar Authentication History",
+                step1_img_list3: "...",
+                step2_title: "Step 2: Access the Linking Page",
+                step2_desc: "Click on the \"Check Aadhaar & Bank Account Linking Status\" link.",
+                step2_img_title: "Web Page: Check Aadhaar/Bank Account Linking Status",
+                step2_img_heading: "To check your status, enter your details below.",
+                step2_img_input1_placeholder: "Enter your 12-digit Aadhaar Number",
+                step2_img_input2_placeholder: "Enter the security code",
+                step2_img_button: "Send OTP",
+                step3_title: "Step 3: Enter OTP",
+                step3_desc: "Enter your Aadhaar number, fill in the security code, and then enter the OTP you receive on your registered mobile number.",
+                step3_img_title: "Web Page: Check Aadhaar/Bank Account Linking Status",
+                step3_img_heading: "An OTP has been sent to your mobile number.",
+                step3_img_input_placeholder: "Enter the OTP received",
+                step3_img_button: "Submit",
+                step4_title: "Step 4: View Your Status",
+                step4_desc: "After submitting the OTP, a confirmation page will display your Aadhaar and bank linkage status.",
+                step4_img_title: "Web Page: Aadhaar Bank Account Linking Status",
+                step4_img_heading: "Congratulations! Your Aadhaar-Bank Mapping has been done",
+                step4_table_header1: "Bank Name",
+                step4_table_header2: "Status",
+                step4_table_header3: "Last Updated",
+                step4_table_status: "Active",
+                step4_important_heading: "Important:",
+                step4_important_desc: "This confirms the link, but ensure your bank has also \"seeded\" the account for DBT to receive funds.",
+                cta_title: "What to do next?",
+                cta_desc: "Make sure your Aadhaar is not just linked, but seeded for DBT. Visit your bank branch or use their official website/app to complete this process.",
+                cta_button: "Learn More on UIDAI",
+                chatbot_title: "Gemini Scholarship Bot",
+                chatbot_message1: "Hi there! I'm your AI Scholarship Assistant, powered by Gemini.",
+                chatbot_message2: "How can I help you understand the difference between Aadhaar linking and DBT seeding for your scholarships?",
+                input_placeholder: "Type your message...",
+                faq_title: "Common Questions & Tips",
+                q1_title: "Q: Can I have multiple bank accounts linked to my Aadhaar?",
+                q1_answer: "Yes, you can. However, only one account can be active for DBT at any given time. This is called the 'latest seeded' account and is where your scholarship will be disbursed. Make sure the correct account is seeded for DBT.",
+                q2_title: "Q: What if I have Aadhaar-linked but not DBT-seeded?",
+                q2_answer: "Your scholarship payment will fail. The Government can only transfer funds to an account that is explicitly seeded for DBT. You must contact your bank and get your account seeded to receive your scholarship.",
+                q3_title: "Tip: What document to carry to the bank?",
+                q3_answer: "When you go to the bank for Aadhaar seeding, carry a copy of your Aadhaar card and a signed consent form provided by the bank. Some banks may also require a passbook or a check leaf to verify your account details.",
+                q4_title: "Tip: Use NPCI Mapper",
+                q4_answer: "You can also check your Aadhaar seeding status directly on the NPCI website using their Aadhaar Mapper. This is a quick way to confirm which bank account is currently receiving your DBT payments.",
+            },
+            hi: {
+                intro_title: "अपनी छात्रवृत्ति को समझना",
+                intro_subtitle: "यह सुनिश्चित करने के लिए एक त्वरित मार्गदर्शिका कि आपकी छात्रवृत्ति का पैसा बिना किसी परेशानी के आप तक पहुँचे।",
+                start_button: "आइए शुरू करें",
+                main_title: "आधार-लिंक्ड बनाम डीबीटी-सक्षम",
+                main_subtitle: "अंतर को समझना आपके एससी के लिए प्री और पोस्ट-मैट्रिक छात्रवृत्ति योजना प्राप्त करने की कुंजी है।",
+                dashboard_title: "आपका छात्रवृत्ति डैशबोर्ड",
+                aadhaar_link_status_title: "आधार लिंक स्थिति",
+                aadhaar_link_status_desc: "आधार को बैंक खाते से जोड़ने का पूरा होना।",
+                complete_status: "पूर्ण",
+                dbt_seeding_status_title: "डीबीटी सीडिंग स्थिति",
+                dbt_seeding_status_desc: "डीबीटी के लिए बैंक खाते की सीडिंग की पुष्टि।",
+                in_progress_status: "प्रगति में (75%)",
+                dashboard_note: "डैशबोर्ड आपको एक त्वरित अवलोकन देता है। याद रखें, एक सुगम प्रक्रिया के लिए दोनों कदम आवश्यक हैं।",
+                aadhaar_card_title: "आधार-लिंक्ड खाता",
+                aadhaar_card_desc: "यह मूल कदम है। यह पहचान और सत्यापन उद्देश्यों के लिए आपके आधार नंबर को आपके बैंक खाते से जोड़ता है।",
+                aadhaar_point1: "मुख्य रूप से केवाईसी (अपने ग्राहक को जानें) और पहचान सत्यापन के लिए।",
+                aadhaar_point2: "यह स्वचालित रूप से गारंटी नहीं देता कि आपको छात्रवृत्ति निधि प्राप्त होगी।",
+                aadhaar_point3: "यह केवल पहला कदम है। आपको और अधिक करने की आवश्यकता है!",
+                dbt_card_title: "डीबीटी-सक्षम आधार-सीडेड खाता",
+                dbt_card_desc: "सरकारी लाभ जैसे छात्रवृत्ति प्राप्त करने के लिए यह एक महत्वपूर्ण कदम है। आपका खाता विशेष रूप से प्रत्यक्ष लाभ हस्तांतरण के लिए 'सीडेड' है।",
+                dbt_point1: "आपका खाता सीधे सरकारी धन प्राप्त करने के लिए नामित है।",
+                dbt_point2: "सरकार से छात्रवृत्ति और अन्य लाभ प्राप्त करने के लिए महत्वपूर्ण है।",
+                dbt_point3: "आपको यह सुनिश्चित करना होगा कि आपका आधार डीबीटी के लिए एक विशिष्ट बैंक खाते से 'सीडेड' है।",
+                why_dbt_title: "डीबीटी इतना महत्वपूर्ण क्यों है",
+                reduced_delays: "कम देरी: धन सीधे सरकार से आपके बैंक खाते में हस्तांतरित होता है, बिचौलियों को खत्म करता है और देरी को कम करता है।",
+                increased_transparency: "बढ़ी हुई पारदर्शिता: आप अपनी छात्रवृत्ति भुगतान की स्थिति को आसानी से ट्रैक कर सकते हैं, जिससे आपको मानसिक शांति मिलती है।",
+                dbt_check_title: "अपने आधार और डीबीटी स्थिति की जाँच कैसे करें",
+                dbt_check_subtitle: "अपने बैंक खाता लिंक स्थिति को सत्यापित करने के लिए यूआईडीएआई वेबसाइट पर इन सरल चरणों का पालन करें।",
+                step1_title: "चरण 1: आधिकारिक साइट पर जाएँ",
+                step1_desc: "आधिकारिक यूआईडीएआई वेबसाइट पर जाएँ और आधार सेवा अनुभाग देखें।",
+                step1_img_title: "यूआईडीएआई आधिकारिक वेबसाइट",
+                step1_img_heading: "आधार सेवाएँ",
+                step1_img_list1: "आधार और बैंक खाता लिंकिंग स्थिति की जाँच करें",
+                step1_img_list2: "आधार प्रमाणीकरण इतिहास",
+                step1_img_list3: "...",
+                step2_title: "चरण 2: लिंकिंग पृष्ठ तक पहुँचें",
+                step2_desc: "\"आधार और बैंक खाता लिंकिंग स्थिति की जाँच करें\" लिंक पर क्लिक करें।",
+                step2_img_title: "वेब पृष्ठ: आधार/बैंक खाता लिंकिंग स्थिति की जाँच करें",
+                step2_img_heading: "अपनी स्थिति की जाँच करने के लिए, नीचे अपने विवरण दर्ज करें।",
+                step2_img_input1_placeholder: "अपना 12-अंकीय आधार नंबर दर्ज करें",
+                step2_img_input2_placeholder: "सुरक्षा कोड दर्ज करें",
+                step2_img_button: "ओटीपी भेजें",
+                step3_title: "चरण 3: ओटीपी दर्ज करें",
+                step3_desc: "अपना आधार नंबर दर्ज करें, सुरक्षा कोड भरें, और फिर अपने पंजीकृत मोबाइल नंबर पर प्राप्त ओटीपी दर्ज करें।",
+                step3_img_title: "वेब पृष्ठ: आधार/बैंक खाता लिंकिंग स्थिति की जाँच करें",
+                step3_img_heading: "आपके पंजीकृत मोबाइल नंबर पर एक ओटीपी भेजा गया है।",
+                step3_img_input_placeholder: "प्राप्त ओटीपी दर्ज करें",
+                step3_img_button: "जमा करें",
+                step4_title: "चरण 4: अपनी स्थिति देखें",
+                step4_desc: "ओटीपी जमा करने के बाद, एक पुष्टिकरण पृष्ठ आपके आधार और बैंक लिंकिंग स्थिति को प्रदर्शित करेगा।",
+                step4_img_title: "वेब पृष्ठ: आधार बैंक खाता लिंकिंग स्थिति",
+                step4_img_heading: "बधाई हो! आपकी आधार-बैंक मैपिंग हो चुकी है",
+                step4_table_header1: "बैंक का नाम",
+                step4_table_header2: "स्थिति",
+                step4_table_header3: "अंतिम अद्यतन",
+                step4_table_status: "सक्रिय",
+                step4_important_heading: "महत्वपूर्ण:",
+                step4_important_desc: "यह लिंक की पुष्टि करता है, लेकिन सुनिश्चित करें कि आपके बैंक ने भी डीबीटी के लिए खाते को 'सीड' किया है ताकि फंड प्राप्त हो सके।",
+                cta_title: "आगे क्या करना है?",
+                cta_desc: "सुनिश्चित करें कि आपका आधार सिर्फ लिंक ही नहीं, बल्कि डीबीटी के लिए सीडेड भी है। इस प्रक्रिया को पूरा करने के लिए अपनी बैंक शाखा पर जाएँ या उनकी आधिकारिक वेबसाइट/ऐप का उपयोग करें।",
+                cta_button: "यूआईडीएआई पर और जानें",
+                chatbot_title: "जेमिनी छात्रवृत्ति बॉट",
+                chatbot_message1: "नमस्ते! मैं आपका एआई छात्रवृत्ति सहायक हूँ, जो जेमिनी द्वारा संचालित है।",
+                chatbot_message2: "मैं आपकी छात्रवृत्ति के लिए आधार लिंकिंग और डीबीटी सीडिंग के बीच के अंतर को समझने में कैसे मदद कर सकता हूँ?",
+                input_placeholder: "अपना संदेश टाइप करें...",
+                faq_title: "आम प्रश्न और सुझाव",
+                q1_title: "प्र: क्या मैं अपने आधार से कई बैंक खाते लिंक कर सकता हूँ?",
+                q1_answer: "हाँ, आप कर सकते हैं। हालांकि, एक समय में केवल एक खाता डीबीटी के लिए सक्रिय हो सकता है। इसे 'नवीनतम सीडेड' खाता कहा जाता है और यहीं पर आपकी छात्रवृत्ति वितरित की जाएगी। सुनिश्चित करें कि सही खाता डीबीटी के लिए सीडेड है।",
+                q2_title: "प्र: यदि मेरा आधार-लिंक्ड है लेकिन डीबीटी-सीडेड नहीं है तो क्या होगा?",
+                q2_answer: "आपकी छात्रवृत्ति भुगतान विफल हो जाएगा। सरकार केवल उसी खाते में फंड ट्रांसफर कर सकती है जो स्पष्ट रूप से डीबीटी के लिए सीडेड है। आपको अपनी छात्रवृत्ति प्राप्त करने के लिए अपने बैंक से संपर्क करना होगा और अपने खाते को सीडेड करवाना होगा।",
+                q3_title: "सुझाव: बैंक में कौन से दस्तावेज़ ले जाएँ?",
+                q3_answer: "जब आप आधार सीडिंग के लिए बैंक जाते हैं, तो अपने आधार कार्ड की एक प्रति और बैंक द्वारा प्रदान किया गया एक हस्ताक्षरित सहमति पत्र ले जाएँ। कुछ बैंक आपके खाते के विवरण को सत्यापित करने के लिए पासबुक या चेक का एक पत्ता भी मांग सकते हैं।",
+                q4_title: "सुझाव: एनपीसीआई मैपर का उपयोग करें",
+                q4_answer: "आप सीधे एनपीसीआई वेबसाइट पर उनके आधार मैपर का उपयोग करके अपनी आधार सीडिंग स्थिति की जाँच भी कर सकते हैं। यह पुष्टि करने का एक त्वरित तरीका है कि वर्तमान में आपका कौन सा बैंक खाता डीबीटी भुगतान प्राप्त कर रहा है।",
+            }
+        };
+
+        function setLanguage(lang) {
+            const content = translations[lang];
+            
+            // Set attributes for all translatable elements
+            document.querySelectorAll('[data-i18n-key]').forEach(el => {
+                const key = el.getAttribute('data-i18n-key');
+                if (content[key]) {
+                    el.textContent = content[key];
+                }
+            });
+
+            document.getElementById('intro-title').textContent = content.intro_title;
+            document.getElementById('intro-subtitle').textContent = content.intro_subtitle;
+            document.getElementById('startButton').textContent = content.start_button;
+
+            // Handle placeholder for input
+            document.getElementById('user-input').placeholder = content.input_placeholder;
+            
+            // Save language preference to local storage
+            localStorage.setItem('lang', lang);
+        }
+
+        function handleIntersect(entries, observer) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const animationScreen = document.getElementById('animation-screen');
+            const startButton = document.getElementById('startButton');
+            const mainContent = document.getElementById('main-content');
+            const chatbotButton = document.getElementById('chatbot-button');
+            const chatbotUI = document.getElementById('chatbot-ui');
+            const closeChatButton = document.getElementById('close-chat');
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            
+            // Set initial language from local storage or default to English
+            const initialLang = localStorage.getItem('lang') || 'en';
+            setLanguage(initialLang);
+
+            // Add event listeners for language buttons
+            document.querySelectorAll('.lang-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const lang = e.target.getAttribute('data-lang');
+                    setLanguage(lang);
+                });
+            });
+
+            startButton.addEventListener('click', () => {
+                animationScreen.style.opacity = '0';
+                setTimeout(() => {
+                    animationScreen.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    // Start observing for animations
+                    const observerOptions = {
+                        root: null,
+                        rootMargin: '0px',
+                        threshold: 0.2
+                    };
+                    const observer = new IntersectionObserver(handleIntersect, observerOptions);
+                    document.querySelectorAll('.slide-up-fade-in').forEach(element => {
+                        observer.observe(element);
+                    });
+                }, 1000); // Wait for the fade-out to complete
+            });
+
+            chatbotButton.addEventListener('click', () => {
+                chatbotUI.classList.toggle('active');
+            });
+
+            closeChatButton.addEventListener('click', () => {
+                chatbotUI.classList.remove('active');
+            });
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+
+                // Add user message to chat
+                const userMessage = document.createElement('div');
+                userMessage.classList.add('message', 'user');
+                userMessage.textContent = message;
+                chatMessages.appendChild(userMessage);
+
+                // Add a temporary "typing..." message from the bot
+                const typingMessage = document.createElement('div');
+                typingMessage.classList.add('message', 'bot');
+                typingMessage.textContent = 'Thinking...';
+                chatMessages.appendChild(typingMessage);
+                
+                // Scroll to the bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                userInput.value = '';
+
+                try {
+                    const botResponse = await generateGeminiResponse(message);
+                    typingMessage.textContent = botResponse;
+                } catch (error) {
+                    console.error('Error fetching from Gemini API:', error);
+                    typingMessage.textContent = 'Oops! Something went wrong. Please try again later.';
+                } finally {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
+
+            async function generateGeminiResponse(userQuery) {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: "You are a helpful and knowledgeable AI assistant for students. Provide concise and easy-to-understand explanations on the difference between Aadhaar linking and DBT seeding, especially for scholarships." }]
+                    },
+                };
+
+                let response;
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (e) {
+                    throw new Error('API fetch failed');
+                }
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    return candidate.content.parts[0].text;
+                } else {
+                    return 'I\'m sorry, I could not generate a response. Please try again.';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
