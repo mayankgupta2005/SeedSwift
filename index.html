@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadhaar & DBT Awareness for Scholarships</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link "style.css" rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            overflow-x: hidden;
+        }
+        
+        /* Welcome Modal Styles */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        .welcome-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            transform: translateY(-50px);
+            transition: transform 0.5s ease;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .welcome-modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-content h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+        
+        /* Video Section Styles */
+        .video-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .video-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .video-caption {
+            padding: 1.5rem;
+            color: var(--dark);
+        }
+        
+        .video-caption h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo img {
+            height: 50px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: var(--light);
+        }
+        
+        .hero {
+            background: linear-gradient(rgba(44, 62, 80, 0.8), rgba(44, 62, 80, 0.8)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%232c3e50"/><path d="M0 50 L100 50 M50 0 L50 100" stroke="%233498db" stroke-width="2"/></svg>');
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary);
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background-color: var(--secondary);
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+        
+        .comparison {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .comparison-card {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .comparison-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .card-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .card-body ul {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-body li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .card-body li i {
+            color: var(--success);
+            margin-top: 5px;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .step-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            background-color: var(--secondary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .step-icon {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .faq-container {
+            margin-bottom: 4rem;
+        }
+        
+        .faq-item {
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .faq-question {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            background-color: white;
+            padding: 1.5rem;
+            display: none;
+        }
+        
+        .faq-active .faq-answer {
+            display: block;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 4rem;
+            justify-content: center;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .resources {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .resource-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .resource-icon {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: space-between;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .footer-bottom {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+            }
+            
+            .modal-content h2 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Modal -->
+    <div class="welcome-modal active" id="welcomeModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2>Welcome to Scholarship DBT Awareness</h2>
+            <p>This initiative by SCD-V Division, DoSJE aims to help students understand the importance of DBT-enabled Aadhaar seeded bank accounts for seamless scholarship disbursement.</p>
+            <p>Learn how to ensure your scholarship funds reach you without delays!</p>
+            <button class="btn" id="getStartedBtn">Get Started</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-graduation-cap" style="font-size: 2rem;"></i>
+                <h1>Scholarship DBT Awareness</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#difference">Difference</a></li>
+                    <li><a href="#video">Video</a></li>
+                    <li><a href="#steps">Steps</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                    <li><a href="#resources">Resources</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero" style="position: relative;">
+        <!-- Background Image -->
+        <img src="DBT.jpeg" alt="Aadhaar Background" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.18; z-index: 0;">
+        <div class="hero-content" style="position: relative; z-index: 1;">
+            <h2>Understanding Aadhaar Linked vs DBT Enabled Bank Accounts</h2>
+            <p>Ensure timely scholarship disbursement by knowing the difference and taking the right steps</p>
+            <a href="#difference" class="btn">Learn More</a>
+        </div>
+    </section>
+
+    <!-- Image Carousel Section Start -->
+    <section class="carousel-section" style="background: #fff; padding: 2rem 0;">
+        <div class="container">
+            <h2 class="section-title">Gallery</h2>
+            <div class="carousel-wrapper" style="max-width: 800px; margin: 0 auto; position: relative;">
+                <div id="carousel-images" style="display: flex; overflow: hidden; border-radius: 10px;">
+                    <img src="images.jpeg" alt="Image" style="width: 100%; display: block;">
+                    <img src="images.jpeg" alt="Image" style="width: 100%; display: block;">
+                    <img src="images.jpeg" alt="Image" style="width: 100%; display: block;">
+                </div>
+                <button id="carousel-prev" style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); background: #3498db; color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.5rem; cursor: pointer;">&#8249;</button>
+                <button id="carousel-next" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); background: #3498db; color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.5rem; cursor: pointer;">&#8250;</button>
+            </div>
+        </div>
+    </section>
+    <!-- Image Carousel Section End -->
+
+    <!-- Video Section -->
+    <section class="video-section" id="video">
+        <div class="container">
+            <h2 class="section-title">Understanding DBT Enabled Accounts</h2>
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <!-- Embedded YouTube video (placeholder - replace with actual video) -->
+                     <iframe width="420" height="315" src="https://youtu.be/vvRo5tOU32Q?si=ZAPa7c_RQ-WgB2_z"></iframe>
+                </div>
+                <div class="video-caption">
+                    <h3>Why DBT Enabled Accounts Matter for Scholarship Disbursement</h3>
+                    <p>This video explains the key differences between Aadhaar linked and DBT enabled accounts, and why the latter is essential for receiving government scholarships without delays.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="difference" class="container">
+        <h2 class="section-title">Key Differences</h2>
+        <div class="comparison">
+            <div class="comparison-card">
+                <div class="card-header">
+                    <h3>Aadhaar Linked Bank Account</h3>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Aadhaar number is linked to your bank account</li>
+                        <li><i class="fas fa-check-circle"></i> Basic verification completed</li>
+                        <li><i class="fas fa-times-circle" style="color: var(--accent);"></i> <strong>Not sufficient for DBT scholarships</strong></li>
+                        <li><i class="fas fa-times-circle" style="color: var(--accent);"></i> Cannot receive government subsidies directly</li>
+                        <li><i class="fas fa-times-circle" style="color: var(--accent);"></i> May cause delays in scholarship disbursement</li>
+                    </ul>
+                    <a href="#steps" class="btn">How to Upgrade</a>
+                </div>
+            </div>
+            
+            <div class="comparison-card">
+                <div class="card-header">
+                    <h3>DBT Enabled Aadhaar Seeded Account</h3>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Aadhaar is properly seeded with your bank account</li>
+                        <li><i class="fas fa-check-circle"></i> Account is enabled for Direct Benefit Transfer</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Required for scholarship disbursement</strong></li>
+                        <li><i class="fas fa-check-circle"></i> Enables direct receipt of government subsidies</li>
+                        <li><i class="fas fa-check-circle"></i> Ensures timely scholarship payments</li>
+                    </ul>
+                    <a href="#steps" class="btn">Verification Steps</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3 style="text-align: center; margin-bottom: 1.5rem;">Scholarship Disbursement Process</h3>
+            <canvas id="processChart" height="150"></canvas>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">72%</div>
+                <p>Students with only Aadhaar linked accounts</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">28%</div>
+                <p>Students with properly DBT enabled accounts</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">63%</div>
+                <p>Scholarship delays due to account issues</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="steps" class="container">
+        <h2 class="section-title">Steps to Enable DBT for Scholarships</h2>
+        <div class="steps">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <h3>Visit Your Bank</h3>
+                <p>Go to your bank branch where you hold your account</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3>Submit Request</h3>
+                <p>Request for Aadhaar seeding and DBT enablement</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3>Verify Mobile & Email</h3>
+                <p>Ensure your mobile number and email are updated with the bank</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div class="step-icon">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <h3>Confirmation</h3>
+                <p>Get confirmation of DBT enablement from your bank</p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="#verification" class="btn">How to Verify Your Account Status</a>
+        </div>
+    </section>
+
+    <section id="faq" class="container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>What is the main difference between Aadhaar linked and DBT enabled accounts?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>An Aadhaar linked account only has your Aadhaar number associated with it, while a DBT enabled account has your Aadhaar properly seeded and verified to receive Direct Benefit Transfers from the government. Only DBT enabled accounts can receive scholarship payments.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>How can I check if my account is DBT enabled?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>You can check your account status by:</p>
+                    <ul>
+                        <li>Visiting your bank branch and asking about DBT status</li>
+                        <li>Checking your account details in online banking</li>
+                        <li>Verifying through the National Scholarship Portal</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>What documents do I need to enable DBT?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Typically, you will need:</p>
+                    <ul>
+                        <li>Aadhaar card (original and photocopy)</li>
+                        <li>Bank passbook or statement</li>
+                        <li>Proof of identity (PAN card, Voter ID, etc.)</li>
+                        <li>Proof of address</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Is there any charge for enabling DBT on my account?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>No, banks do not charge any fee for Aadhaar seeding or DBT enablement. This service is free for all account holders.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="resources" class="container">
+        <h2 class="section-title">Helpful Resources</h2>
+        <div class="resources">
+            <div class="resource-card">
+                <div class="resource-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3>Download Guides</h3>
+                <p>Step-by-step guides for DBT enablement</p>
+                <a href="#" class="btn">Download</a>
+            </div>
+            
+            <div class="resource-card">
+                <div class="resource-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h3>Video Tutorials</h3>
+                <p>Watch how to enable DBT for your account</p>
+                <a href="#" class="btn">Watch Now</a>
+            </div>
+            
+            <div class="resource-card">
+                <div class="resource-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h3>Help Center</h3>
+                <p>Get answers to your specific questions</p>
+                <a href="#" class="btn">Get Help</a>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: dbt-help@scholarship.gov.in</p>
+                <p>Helpline: 1800-123-4567</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <p><a href="#" style="color: white;">National Scholarship Portal</a></p>
+                <p><a href="#" style="color: white;">Aadhaar Services</a></p>
+                <p><a href="#" style="color: white;">DBT Portal</a></p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div style="font-size: 1.5rem;">
+                    <i class="fab fa-facebook" style="margin-right: 1rem;"></i>
+                    <i class="fab fa-twitter" style="margin-right: 1rem;"></i>
+                    <i class="fab fa-instagram"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2023 SCD-V Division, DoSJE. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Welcome Modal functionality
+        const welcomeModal = document.getElementById('welcomeModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const getStartedBtn = document.getElementById('getStartedBtn');
+        
+        function closeModal() {
+            welcomeModal.classList.remove('active');
+            // Set a cookie or local storage to prevent showing the modal again for a period of time
+            localStorage.setItem('modalShown', 'true');
+        }
+        
+        closeModalBtn.addEventListener('click', closeModal);
+        getStartedBtn.addEventListener('click', closeModal);
+        
+        // Check if modal has been shown before
+        window.addEventListener('DOMContentLoaded', () => {
+            const modalShown = localStorage.getItem('modalShown');
+            if (!modalShown) {
+                welcomeModal.classList.add('active');
+            }
+        });
+        
+        // FAQ functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('faq-active');
+            });
+        });
+        
+        // Process chart
+        const processCtx = document.getElementById('processChart').getContext('2d');
+        const processChart = new Chart(processCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Account Verification', 'Application Submission', 'Approval Process', 'Disbursement'],
+                datasets: [{
+                    label: 'Days Taken with Aadhaar Linked Only',
+                    data: [14, 7, 21, 10],
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Days Taken with DBT Enabled',
+                    data: [0, 7, 7, 3],
+                    backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Days'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close modal if open
+                    if (welcomeModal.classList.contains('active')) {
+                        closeModal();
+                    }
+                }
+            });
+        });
+
+        // Image Carousel Logic
+        const carouselImages = [
+            "https://via.placeholder.com/800x350?text=Image+1",
+            "https://via.placeholder.com/800x350?text=Image+2",
+            "https://via.placeholder.com/800x350?text=Image+3"
+        ];
+        let currentIndex = 0;
+        const carouselImgTag = document.querySelector('#carousel-images img');
+        const prevBtn = document.getElementById('carousel-prev');
+        const nextBtn = document.getElementById('carousel-next');
+
+        function showCarouselImage(index) {
+            carouselImgTag.src = carouselImages[index];
+        }
+
+        prevBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+            showCarouselImage(currentIndex);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % carouselImages.length;
+            showCarouselImage(currentIndex);
+        });
+
+        // Initialize carousel
+        showCarouselImage(currentIndex);
+    </script>
+    <script src="script.js"></script>
+
+    <!-- Chatbot Widget Start -->
+    <div id="chatbot-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999;">
+        <button id="chatbot-toggle" style="background: #3498db; color: #fff; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer;">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div id="chatbot-window" style="display: none; width: 320px; height: 420px; background: #fff; border-radius: 15px; box-shadow: 0 8px 32px rgba(44,62,80,0.18); position: absolute; bottom: 70px; right: 0; overflow: hidden; flex-direction: column;">
+            <div style="background: #3498db; color: #fff; padding: 1rem; font-weight: 500;">
+                Scholarship Chatbot
+                <button id="chatbot-close" style="float: right; background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+            <div id="chatbot-messages" style="padding: 1rem; height: 280px; overflow-y: auto; font-size: 1rem; background: #f9f9f9;"></div>
+            <form id="chatbot-form" style="display: flex; border-top: 1px solid #eee;">
+                <input type="text" id="chatbot-input" placeholder="Type your question..." style="flex: 1; padding: 0.7rem; border: none; outline: none; font-size: 1rem;">
+                <button type="submit" style="background: #3498db; color: #fff; border: none; padding: 0 1rem; font-size: 1.2rem; cursor: pointer;">Send</button>
+            </form>
+        </div>
+    </div>
+    <!-- Chatbot Widget End -->
+
+    <script>
+    // Simple Chatbot Logic
+    const chatbotToggle = document.getElementById('chatbot-toggle');
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const chatbotClose = document.getElementById('chatbot-close');
+    const chatbotForm = document.getElementById('chatbot-form');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotMessages = document.getElementById('chatbot-messages');
+
+    chatbotToggle.onclick = () => chatbotWindow.style.display = 'flex';
+    chatbotClose.onclick = () => chatbotWindow.style.display = 'none';
+
+    function addMessage(text, sender = 'bot') {
+        const msg = document.createElement('div');
+        msg.style.marginBottom = '0.7rem';
+        msg.style.textAlign = sender === 'bot' ? 'left' : 'right';
+        msg.innerHTML = `<span style="background:${sender==='bot'?'#ecf0f1':'#3498db'};color:${sender==='bot'?'#333':'#fff'};padding:0.5rem 1rem;border-radius:15px;display:inline-block;">${text}</span>`;
+        chatbotMessages.appendChild(msg);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    addMessage('Hi! 👋 How can I help you with scholarships or DBT accounts today?');
+
+    chatbotForm.onsubmit = function(e) {
+        e.preventDefault();
+        const userText = chatbotInput.value.trim();
+        if (!userText) return;
+        addMessage(userText, 'user');
+        chatbotInput.value = '';
+
+        // Simple FAQ responses
+        let response = "Sorry, I didn't understand. Please ask about DBT, Aadhaar, or scholarships.";
+        if (/dbt/i.test(userText)) response = "DBT stands for Direct Benefit Transfer. It enables direct transfer of scholarships to your bank account.";
+        else if (/aadhaar/i.test(userText)) response = "Aadhaar is a unique ID. Your bank account must be Aadhaar seeded and DBT enabled for scholarships.";
+        else if (/scholarship/i.test(userText)) response = "Scholarships are credited to DBT enabled accounts. Make sure your account is properly set up!";
+        else if (/enable/i.test(userText)) response = "Visit your bank and request Aadhaar seeding and DBT enablement for your account.";
+        else if (/documents/i.test(userText)) response = "You typically need your Aadhaar card, bank passbook, and proof of identity/address for DBT enablement.";
+
+        setTimeout(() => addMessage(response), 700);
+    };
+    </script>
+</body>
+</html>
