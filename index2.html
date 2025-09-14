@@ -178,6 +178,69 @@
         .chat-input button:hover { background-color: #3f51b5; }
         .chat-icon-button { position: fixed; bottom: 2rem; right: 2rem; background-color: #4c51bf; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.3s ease-in-out; cursor: pointer; z-index: 2000; }
         .chat-icon-button:hover { transform: scale(1.1); }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a202c;
+            color: #f7fafc;
+        }
+        body.dark-mode .card {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+        body.dark-mode .testimonial-card {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+        body.dark-mode .flip-card-front, body.dark-mode .flip-card-back {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+        body.dark-mode .progress-bar-container {
+            background-color: #4a5568;
+        }
+        body.dark-mode .chatbot-container {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+        body.dark-mode .chat-messages {
+            background-color: #1a202c;
+        }
+        body.dark-mode .message.user {
+            background-color: #4c51bf;
+            color: #f7fafc;
+        }
+        body.dark-mode .message.bot {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+        body.dark-mode #proactive-chat-prompt {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+        body.dark-mode .lang-button, body.dark-mode #dark-mode-toggle {
+            background-color: #2d3748;
+            color: #f7fafc;
+            border-color: #4c51bf;
+        }
+        body.dark-mode .lang-button:hover, body.dark-mode #dark-mode-toggle:hover {
+            background-color: #4c51bf;
+        }
+        body.dark-mode #search-input {
+            background-color: #2d3748;
+            color: #f7fafc;
+            border-color: #4a5568;
+        }
+        body.dark-mode #search-input:focus {
+            border-color: #4c51bf;
+        }
+        body.dark-mode #search-btn {
+            background-color: #4c51bf;
+            color: #f7fafc;
+        }
+        body.dark-mode #search-btn:hover {
+            background-color: #3f51b5;
+        }
     </style>
 </head>
 <body class="bg-gray-100 antialiased">
@@ -204,9 +267,18 @@
 
     <div id="main-content" class="container mx-auto px-4 py-8 md:py-16 hidden">
         <div class="pt-12">
-            <div class="flex justify-end mb-4">
-                <button data-lang="en" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200">English</button>
-                <button data-lang="hi" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200 ml-2">हिंदी</button>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center space-x-4">
+                    <input type="text" id="search-input" placeholder="Search content..." class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="search-btn" class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200">Search</button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button data-lang="en" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200">English</button>
+                    <button data-lang="hi" class="lang-button text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200 ml-2">हिंदी</button>
+                    <button id="dark-mode-toggle" class="text-sm px-4 py-1 rounded-full border border-indigo-500 hover:bg-indigo-500 hover:text-white transition duration-200 ml-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+                </div>
             </div>
             <header class="text-center mb-12">
                 <h1 data-i18n-key="main_title" class="text-4xl md:text-5xl font-extrabold text-gradient mb-4">
@@ -220,8 +292,8 @@
 
         <section class="mb-12 p-6 bg-white rounded-3xl shadow-lg slide-up-fade-in">
             <h2 data-i18n-key="video_title" class="text-3xl font-bold text-center mb-6 text-gray-800">Don't Miss Out! Watch This 90-Second Video</h2>
-            <div class="aspect-w-16 aspect-h-9 bg-gray-200 rounded-2xl flex items-center justify-center">
-                 <p data-i18n-key="video_placeholder" class="text-gray-500">Animated Explainer Video Coming Soon!</p>
+            <div class="aspect-w-16 aspect-h-7 md:aspect-h-5 rounded-2xl overflow-hidden" style="min-height:350px; height:clamp(350px,50vw,520px);">
+        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/ihJgeBQTpTA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </section>
 
@@ -261,9 +333,11 @@
             <h2 data-i18n-key="dashboard_title" class="text-3xl font-bold text-center mb-6 text-gray-800">Your Scholarship Dashboard</h2>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <h3 data-i18n-key="aadhaar_link_status_title" class="text-xl font-semibold mb-2 text-indigo-700">Aadhaar Link Status</h3>
-                    <div class="progress-bar-container"><div class="progress-bar" style="width: 100%;"></div></div>
-                    <p data-i18n-key="complete_status" class="text-right font-bold mt-2 text-green-600">Complete</p>
+                    <h3 data-i18n-key="aadhaar_card_title" class="text-3xl font-bold text-center mb-6 text-indigo-800">Aadhaar Linked Account</h3>
+                    <ul class="text-gray-700 space-y-3">
+                        <li class="list-item"><svg class="svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-9-6a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg><span data-i18n-key="aadhaar_point1"></span></li>
+                        <li class="list-item"><svg class="svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg><span data-i18n-key="aadhaar_point2"></span></li>
+                    </ul>
                 </div>
                 <div>
                     <h3 data-i18n-key="dbt_seeding_status_title" class="text-xl font-semibold mb-2 text-purple-700">DBT Seeding Status</h3>
@@ -368,6 +442,9 @@
                 Learn More on UIDAI
             </a>
         </div>
+        <footer class="text-center mt-12 mb-6 text-gray-500 text-sm">
+            <p>© 2025 Team : TechForGood Innovations</p>
+        </footer>
     </div>
     
     <div id="proactive-chat-prompt" class="cursor-pointer" onclick="openChat()">
@@ -662,6 +739,57 @@
             checklistSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
+        // --- Dark Mode Toggle ---
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            // Update toggle icon
+            const icon = darkModeToggle.querySelector('svg');
+            if (isDark) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+            }
+        });
+
+        // Load dark mode preference
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'true') {
+            document.body.classList.add('dark-mode');
+            const icon = darkModeToggle.querySelector('svg');
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+        }
+
+        // --- Search Functionality ---
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const sections = document.querySelectorAll('section');
+
+        function performSearch() {
+            const query = searchInput.value.toLowerCase().trim();
+            if (query === '') {
+                sections.forEach(section => section.style.display = 'block');
+                return;
+            }
+
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('input', performSearch);
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
         // --- Original Chatbot Logic ---
         chatbotButton.addEventListener('click', () => {
             chatbotUI.classList.toggle('active');
@@ -672,7 +800,7 @@
 
         sendButton.addEventListener('click', sendMessage);
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
-        
+
         async function sendMessage() {
             const message = userInput.value.trim();
             if (message === '') return;
@@ -681,12 +809,12 @@
             userMessage.classList.add('message', 'user');
             userMessage.textContent = message;
             chatMessages.appendChild(userMessage);
-            
+
             const typingMessage = document.createElement('div');
             typingMessage.classList.add('message', 'bot');
             typingMessage.textContent = 'Thinking...';
             chatMessages.appendChild(typingMessage);
-            
+
             chatMessages.scrollTop = chatMessages.scrollHeight;
             userInput.value = '';
 
